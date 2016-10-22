@@ -19,7 +19,8 @@ apply from: "$rootDir/ScapesEngine/resources/scapesengineapplication.gradle"
 version = "0.0.0_1"
 
 application {
-    fullName = "AmbossCore"
+    name = "AmbossCore"
+    fullName = "Amboss Core"
     version = project.version
     company = "Tobi29"
     url = "https://github.com/Tobi29/Amboss"
