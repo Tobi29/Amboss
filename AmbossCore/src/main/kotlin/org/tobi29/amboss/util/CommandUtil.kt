@@ -23,7 +23,6 @@ import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
 import org.tobi29.scapes.engine.utils.io.tag.structure
 import org.tobi29.scapes.engine.utils.stream
-import java.util.regex.Pattern
 
 fun tellraw(selector: String,
             message: TellrawString): String {
@@ -58,12 +57,6 @@ data class TellrawString(val text: String = "",
         }
     }
 }
-
-fun clearFormatting(str: String): String {
-    return FORMATTING_REPLACE.matcher(str).replaceAll("")
-}
-
-private val FORMATTING_REPLACE = Pattern.compile("§.")
 
 enum class MCColor {
     black, dark_blue, dark_green, dark_aqua, dark_red, dark_purple, gold, gray, dark_gray, blue, green, aqua, red, light_purple, yellow, white

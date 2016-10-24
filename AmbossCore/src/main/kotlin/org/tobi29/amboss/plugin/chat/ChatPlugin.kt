@@ -22,30 +22,25 @@ import org.tobi29.amboss.plugin.Plugin
 import org.tobi29.amboss.plugin.event.ChatEvent
 import org.tobi29.amboss.plugin.event.PlayerJoinEvent
 import org.tobi29.amboss.plugin.event.PlayerLeaveEvent
-import org.tobi29.amboss.util.clearFormatting
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.mapNotNull
 
 class ChatPlugin(amboss: AmbossServer) : Plugin(amboss) {
     override fun initServer(wrapper: WrapperConnection,
                             configStructure: TagStructure) {
         wrapper.addCommand("Chat") { payload ->
-            payload.getString("Name")?.mapNotNull(
-                    ::clearFormatting)?.let { name ->
+            payload.getString("Name")?.let { name ->
                 payload.getString("Message")?.let { message ->
                     wrapper.events.fire(ChatEvent(wrapper, name, message))
                 }
             }
         }
         wrapper.addCommand("Players-Join") { payload ->
-            payload.getString("Name")?.mapNotNull(
-                    ::clearFormatting)?.let { name ->
+            payload.getString("Name")?.let { name ->
                 wrapper.events.fire(PlayerJoinEvent(wrapper, name))
             }
         }
         wrapper.addCommand("Players-Leave") { payload ->
-            payload.getString("Name")?.mapNotNull(
-                    ::clearFormatting)?.let { name ->
+            payload.getString("Name")?.let { name ->
                 wrapper.events.fire(PlayerLeaveEvent(wrapper, name))
             }
         }
