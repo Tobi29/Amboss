@@ -127,7 +127,7 @@ fun main(args: Array<String>) {
             false
         }
     }
-    val connection = ConnectionWorker(taskExecutor)
+    val connection = ConnectionManager(taskExecutor)
     connection.workers(1)
 
     AmbossSystemD.run(address, uuid, privateKey, servers, service, connection,
@@ -162,7 +162,7 @@ object AmbossSystemD : KLogging() {
             privateKey: PrivateKey,
             servers: FilePath,
             service: String,
-            connection: ConnectionWorker,
+            connection: ConnectionManager,
             taskExecutor: TaskExecutor,
             ssl: SSLHandle) {
         taskExecutor.start()
@@ -179,36 +179,38 @@ object AmbossSystemD : KLogging() {
                 privateKey: PrivateKey,
                 servers: FilePath,
                 service: String,
-                connection: ConnectionWorker,
+                connection: ConnectionManager,
                 taskExecutor: TaskExecutor,
                 ssl: SSLHandle) {
         logger.info { "Connecting..." }
-        connection.addClient(NewOutConnection(address, connection, { e ->
+        connection.addOutConnection(address, { e ->
             logger.error { "Failed to connect: $e" }
             taskExecutor.addTaskOnce({
                 connect(address, uuid, privateKey, servers, service,
                         connection, taskExecutor, ssl)
             }, "Reconnect", 20000)
-        }) { socketChannel ->
+        }) { worker, socketChannel ->
             val bundleChannel = PacketBundleChannel(address, socketChannel,
                     taskExecutor, ssl, true)
             val output = bundleChannel.outputStream
             output.put(CONNECTION_HEADER)
             output.put(3)
             bundleChannel.queueBundle()
-            val channel = ControlPanelProtocol(bundleChannel, null,
-                    uuid.toString(),
-                    ControlPanelProtocol.keyPairAuthentication(privateKey))
-            SystemDKickstarter(channel, servers, service)
-            channel.openHook { logger.info { "Connected!" } }
-            channel.closeHook {
-                logger.info { "Disconnected!" }
-                taskExecutor.addTaskOnce({
-                    connect(address, uuid, privateKey, servers, service,
-                            connection, taskExecutor, ssl)
-                }, "Reconnect", 5000)
+            worker.addConnection {
+                val channel = ControlPanelProtocol(worker, bundleChannel, null,
+                        uuid.toString(),
+                        ControlPanelProtocol.keyPairAuthentication(privateKey))
+                SystemDKickstarter(channel, servers, service)
+                channel.openHook { logger.info { "Connected!" } }
+                channel.closeHook {
+                    logger.info { "Disconnected!" }
+                    taskExecutor.addTaskOnce({
+                        connect(address, uuid, privateKey, servers, service,
+                                connection, taskExecutor, ssl)
+                    }, "Reconnect", 5000)
+                }
+                channel
             }
-            connection.addClient(channel)
-        })
+        }
     }
 }

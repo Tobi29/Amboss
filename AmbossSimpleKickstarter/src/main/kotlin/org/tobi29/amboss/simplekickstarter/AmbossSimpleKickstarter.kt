@@ -121,7 +121,8 @@ fun main(args: Array<String>) {
     // Set up task executor
     val taskExecutor = TaskExecutor(object : Crashable {
         override fun crash(e: Throwable) {
-            AmbossSimpleKickstarter.logger.error(e) { "A fatal exception occurred" }
+            AmbossSimpleKickstarter.logger.error(
+                    e) { "A fatal exception occurred" }
             exitLater(1)
         }
     }, "Wrapper")
@@ -135,7 +136,7 @@ fun main(args: Array<String>) {
             false
         }
     }
-    val connection = ConnectionWorker(taskExecutor)
+    val connection = ConnectionManager(taskExecutor)
     connection.workers(1)
 
     AmbossSimpleKickstarter.run(address, uuid, privateKey, serverName, server,
@@ -172,7 +173,7 @@ object AmbossSimpleKickstarter : KLogging() {
             privateKey: PrivateKey,
             serverName: String,
             server: MCServerProcess,
-            connection: org.tobi29.scapes.engine.server.ConnectionWorker,
+            connection: org.tobi29.scapes.engine.server.ConnectionManager,
             taskExecutor: TaskExecutor,
             ssl: SSLHandle) {
         taskExecutor.start()
@@ -189,36 +190,38 @@ object AmbossSimpleKickstarter : KLogging() {
                 privateKey: PrivateKey,
                 serverName: String,
                 server: MCServerProcess,
-                connection: org.tobi29.scapes.engine.server.ConnectionWorker,
+                connection: ConnectionManager,
                 taskExecutor: TaskExecutor,
                 ssl: SSLHandle) {
         logger.info { "Connecting..." }
-        connection.addClient(NewOutConnection(address, connection, { e ->
+        connection.addOutConnection(address, { e ->
             logger.error { "Failed to connect: $e" }
             taskExecutor.addTaskOnce({
                 connect(address, uuid, privateKey, serverName, server,
                         connection, taskExecutor, ssl)
             }, "Reconnect", 20000)
-        }) { socketChannel ->
+        }) { worker, socketChannel ->
             val bundleChannel = PacketBundleChannel(address, socketChannel,
                     taskExecutor, ssl, true)
             val output = bundleChannel.outputStream
             output.put(CONNECTION_HEADER)
             output.put(3)
             bundleChannel.queueBundle()
-            val channel = ControlPanelProtocol(bundleChannel, null,
-                    uuid.toString(),
-                    ControlPanelProtocol.keyPairAuthentication(privateKey))
-            SimpleKickstarter(channel, serverName, server)
-            channel.openHook { logger.info { "Connected!" } }
-            channel.closeHook {
-                logger.info { "Disconnected!" }
-                taskExecutor.addTaskOnce({
-                    connect(address, uuid, privateKey, serverName, server,
-                            connection, taskExecutor, ssl)
-                }, "Reconnect", 5000)
+            worker.addConnection {
+                val channel = ControlPanelProtocol(worker, bundleChannel, null,
+                        uuid.toString(),
+                        ControlPanelProtocol.keyPairAuthentication(privateKey))
+                SimpleKickstarter(channel, serverName, server)
+                channel.openHook { logger.info { "Connected!" } }
+                channel.closeHook {
+                    logger.info { "Disconnected!" }
+                    taskExecutor.addTaskOnce({
+                        connect(address, uuid, privateKey, serverName, server,
+                                connection, taskExecutor, ssl)
+                    }, "Reconnect", 5000)
+                }
+                channel
             }
-            connection.addClient(channel)
-        })
+        }
     }
 }

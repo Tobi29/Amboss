@@ -204,7 +204,7 @@ private fun initWrapper(config: FilePath,
             false
         }
     }
-    val connection = ConnectionWorker(taskExecutor)
+    val connection = ConnectionManager(taskExecutor)
     connection.workers(1)
 
     // Run wrapper
@@ -244,7 +244,7 @@ object AmbossWrapper {
             data: FilePath,
             logParser: LogParser,
             inputStream: PrintStream,
-            connection: ConnectionWorker,
+            connection: ConnectionManager,
             taskExecutor: TaskExecutor,
             ssl: SSLHandle) {
         taskExecutor.start()
@@ -265,39 +265,41 @@ object AmbossWrapper {
                 privateKey: PrivateKey,
                 config: TagStructure,
                 instance: WrapperInstance,
-                connection: ConnectionWorker,
+                connection: ConnectionManager,
                 taskExecutor: TaskExecutor,
                 ssl: SSLHandle) {
         stdout.println("Connecting...")
-        connection.addClient(NewOutConnection(address, connection, { e ->
+        connection.addOutConnection(address, { e ->
             stdout.println("Failed to connect: $e")
             taskExecutor.addTaskOnce({
                 connect(address, uuid, privateKey, config, instance, connection,
                         taskExecutor, ssl)
             }, "Reconnect", 20000)
-        }) { socketChannel ->
+        }) { worker, socketChannel ->
             val bundleChannel = PacketBundleChannel(address, socketChannel,
                     taskExecutor, ssl, true)
             val output = bundleChannel.outputStream
             output.put(CONNECTION_HEADER)
             output.put(1)
             bundleChannel.queueBundle()
-            val channel = ControlPanelProtocol(bundleChannel, null,
-                    uuid.toString(),
-                    ControlPanelProtocol.keyPairAuthentication(privateKey))
-            instance.connectionInit(channel)
-            channel.send("Wrapper-Init", config)
-            channel.openHook { stdout.println("Connected!") }
-            channel.closeHook {
-                instance.connectionClose()
-                stdout.println("Disconnected!")
-                taskExecutor.addTaskOnce({
-                    connect(address, uuid, privateKey, config, instance,
-                            connection, taskExecutor, ssl)
-                }, "Reconnect", 5000)
+            worker.addConnection {
+                val channel = ControlPanelProtocol(worker, bundleChannel, null,
+                        uuid.toString(),
+                        ControlPanelProtocol.keyPairAuthentication(privateKey))
+                instance.connectionInit(channel)
+                channel.send("Wrapper-Init", config)
+                channel.openHook { stdout.println("Connected!") }
+                channel.closeHook {
+                    instance.connectionClose()
+                    stdout.println("Disconnected!")
+                    taskExecutor.addTaskOnce({
+                        connect(address, uuid, privateKey, config, instance,
+                                connection, taskExecutor, ssl)
+                    }, "Reconnect", 5000)
+                }
+                channel
             }
-            connection.addClient(channel)
-        })
+        }
     }
 }
 

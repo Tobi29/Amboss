@@ -36,11 +36,12 @@ class ServerConnection(val amboss: AmbossServer,
         return null
     }
 
-    override fun newConnection(channel: PacketBundleChannel,
+    override fun newConnection(worker: ConnectionWorker,
+                               channel: PacketBundleChannel,
                                id: Byte): Connection? {
         when (id) {
             1.toByte() -> {
-                val controlChannel = WrapperConnection(this,
+                val controlChannel = WrapperConnection(worker, this,
                         channel) { id, mode ->
                     val uuid = try {
                         UUID.fromString(id)
@@ -55,7 +56,7 @@ class ServerConnection(val amboss: AmbossServer,
                 return controlChannel
             }
             2.toByte() -> {
-                val controlChannel = ShellConnection(this,
+                val controlChannel = ShellConnection(worker, this,
                         channel) { id, mode, salt ->
                     val password = adminsStructure.getString(
                             id) ?: return@ShellConnection null
@@ -66,7 +67,7 @@ class ServerConnection(val amboss: AmbossServer,
                 return controlChannel
             }
             3.toByte() -> {
-                val controlChannel = KickstarterConnection(this,
+                val controlChannel = KickstarterConnection(worker, this,
                         channel) { id, mode ->
                     val uuid = try {
                         UUID.fromString(id)

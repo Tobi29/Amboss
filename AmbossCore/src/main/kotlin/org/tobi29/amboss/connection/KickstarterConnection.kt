@@ -16,14 +16,16 @@
 
 package org.tobi29.amboss.connection
 
+import org.tobi29.scapes.engine.server.ConnectionWorker
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.server.PacketBundleChannel
 import javax.crypto.Cipher
 
-class KickstarterConnection(val server: ServerConnection,
+class KickstarterConnection(worker: ConnectionWorker,
+                            val server: ServerConnection,
                             channel: PacketBundleChannel,
                             authentication: (String, Int) -> Cipher?) : ControlPanelProtocol(
-        channel, server.events, authentication) {
+        worker, channel, server.events, authentication) {
     init {
         openHook { server.amboss.serversAdd(this) }
     }

@@ -17,15 +17,17 @@
 package org.tobi29.amboss.connection
 
 import org.tobi29.amboss.plugin.event.LogEvent
+import org.tobi29.scapes.engine.server.ConnectionWorker
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.server.PacketBundleChannel
 import java.io.IOException
 import javax.crypto.Cipher
 
-class WrapperConnection(val server: ServerConnection,
+class WrapperConnection(worker: ConnectionWorker,
+                        val server: ServerConnection,
                         channel: PacketBundleChannel,
                         authentication: (String, Int) -> Cipher?) : ControlPanelProtocol(
-        channel, server.events, authentication) {
+        worker, channel, server.events, authentication) {
     private var init = false
 
     init {

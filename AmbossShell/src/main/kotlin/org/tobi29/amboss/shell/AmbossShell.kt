@@ -117,7 +117,7 @@ fun main(args: Array<String>) {
             false
         }
     }
-    val connection = ConnectionWorker(taskExecutor)
+    val connection = ConnectionManager(taskExecutor)
     connection.workers(1)
 
     AmbossShell.run(address, user, password, input, connection, taskExecutor,
@@ -134,7 +134,7 @@ object AmbossShell : KLogging() {
             user: String,
             password: String,
             input: Queue<String>,
-            connection: ConnectionWorker,
+            connection: ConnectionManager,
             taskExecutor: TaskExecutor,
             ssl: SSLHandle) {
         taskExecutor.start()
@@ -149,38 +149,41 @@ object AmbossShell : KLogging() {
                 user: String,
                 password: String,
                 input: Queue<String>,
-                connection: ConnectionWorker,
+                connection: ConnectionManager,
                 taskExecutor: TaskExecutor,
                 ssl: SSLHandle) {
         logger.info { "Connecting..." }
-        connection.addClient(NewOutConnection(address, connection, { e ->
+        connection.addOutConnection(address, { e ->
             logger.error { "Failed to connect: $e" }
             exitLater(1)
-        }) { socketChannel ->
+        }) { worker, socketChannel ->
             val bundleChannel = PacketBundleChannel(address, socketChannel,
                     taskExecutor, ssl, true)
             val output = bundleChannel.outputStream
             output.put(AmbossShell.CONNECTION_HEADER)
             output.put(2)
             bundleChannel.queueBundle()
-            val channel = ControlPanelProtocol(bundleChannel, null, user,
-                    ControlPanelProtocol.passwordAuthentication(password))
-            val commands = ShellCommands(channel)
-            channel.openHook { logger.info { "Connected!" } }
-            taskExecutor.addTask({
-                if (channel.isClosed) {
-                    return@addTask -1
+            worker.addConnection {
+                val channel = ControlPanelProtocol(worker, bundleChannel, null,
+                        user,
+                        ControlPanelProtocol.passwordAuthentication(password))
+                val commands = ShellCommands(channel)
+                channel.openHook { logger.info { "Connected!" } }
+                taskExecutor.addTask({
+                    if (channel.isClosed) {
+                        return@addTask -1
+                    }
+                    while (input.isNotEmpty()) {
+                        commands.execute(*COMMAND_SPLIT.split(input.poll()))
+                    }
+                    100
+                }, "Input-Reader")
+                channel.closeHook {
+                    logger.info { "Disconnected!" }
+                    exitLater(0)
                 }
-                while (input.isNotEmpty()) {
-                    commands.execute(*COMMAND_SPLIT.split(input.poll()))
-                }
-                100
-            }, "Input-Reader")
-            channel.closeHook {
-                logger.info { "Disconnected!" }
-                exitLater(0)
+                channel
             }
-            connection.addClient(channel)
-        })
+        }
     }
 }
