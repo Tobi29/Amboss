@@ -22,10 +22,7 @@ import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getUUID
-import org.tobi29.scapes.engine.utils.io.tag.setUUID
-import org.tobi29.scapes.engine.utils.io.tag.structure
+import org.tobi29.scapes.engine.utils.io.tag.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -84,7 +81,7 @@ class ShellCommands(channel: ControlPanelProtocol) {
         }
         channel.addCommand("Kickstarter-Servers-List") { payload ->
             val output = StringBuilder(1024)
-            payload.getList("Servers")?.forEach { serverStructure ->
+            payload.getListStructure("Servers") { serverStructure ->
                 serverStructure.getString("Name")?.let { name ->
                     output.append("$name\n")
                 }

@@ -30,11 +30,8 @@ import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.exists
 import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.filesystem.write
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getInt
-import org.tobi29.scapes.engine.utils.io.tag.getUUID
+import org.tobi29.scapes.engine.utils.io.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
-import org.tobi29.scapes.engine.utils.io.tag.setUUID
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.start
 import java.io.IOException
@@ -163,7 +160,7 @@ class AmbossServer(configStructure: TagStructure,
             return
         }
         val tagStructure = read(path) { TagStructureJSON.read(it) }
-        tagStructure.getList("Servers")?.forEach { serverStructure ->
+        tagStructure.getListStructure("Servers") { serverStructure ->
             try {
                 serverStructure.getUUID("UUID")?.let { uuid ->
                     serverStructure.getString("Name")?.let { name ->

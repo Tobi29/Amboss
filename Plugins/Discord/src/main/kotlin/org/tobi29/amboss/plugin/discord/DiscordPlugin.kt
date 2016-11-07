@@ -21,6 +21,7 @@ import org.tobi29.amboss.AmbossServer
 import org.tobi29.amboss.connection.WrapperConnection
 import org.tobi29.amboss.plugin.Plugin
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.getListStructure
 import org.tobi29.scapes.engine.utils.mapNotNull
 import sx.blah.discord.api.ClientBuilder
 import sx.blah.discord.api.IDiscordClient
@@ -38,21 +39,21 @@ class DiscordPlugin(amboss: AmbossServer, token: String) : Plugin(amboss) {
                             configStructure: TagStructure) {
         configStructure.getStructure("Discord")?.let { discordStructure ->
             discordStructure.getStructure("Chat")?.let { chatStructure ->
-                chatStructure.getList("Push")?.forEach { pushStructure ->
+                chatStructure.getListStructure("Push") { pushStructure ->
                     pushStructure.getString("Channel")?.mapNotNull {
                         discord.getChannelByID(it)
                     }?.let { channel ->
                         DiscordChat.pushChannel(this, wrapper, channel)
                     }
                 }
-                chatStructure.getList("Messages")?.forEach { messageStructure ->
+                chatStructure.getListStructure("Messages") { messageStructure ->
                     messageStructure.getString("Channel")?.mapNotNull {
                         discord.getChannelByID(it)
                     }?.let { channel ->
                         DiscordChat.messagesChannel(this, wrapper, channel)
                     }
                 }
-                chatStructure.getList("Pull")?.forEach { pullStructure ->
+                chatStructure.getListStructure("Pull") { pullStructure ->
                     pullStructure.getString("Channel")?.mapNotNull {
                         discord.getChannelByID(it)
                     }?.let { channel ->
