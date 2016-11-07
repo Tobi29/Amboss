@@ -20,7 +20,6 @@ import com.tobi29.minecraft.utils.clockgenerator.ProjectException
 import com.tobi29.minecraft.utils.clockgenerator.generator.GeneratorException
 import com.tobi29.minecraft.utils.clockgenerator.parser.Parser
 import com.tobi29.minecraft.utils.clockgenerator.parser.ParserException
-import org.tobi29.amboss.util.block.writeBlocks
 import mu.KLogging
 import org.tobi29.amboss.AmbossServer
 import org.tobi29.amboss.connection.WrapperConnection
@@ -28,12 +27,13 @@ import org.tobi29.amboss.plugin.Plugin
 import org.tobi29.amboss.plugin.event.ChatEvent
 import org.tobi29.amboss.util.MCColor
 import org.tobi29.amboss.util.TellrawString
+import org.tobi29.amboss.util.block.writeBlocks
 import org.tobi29.amboss.util.tellraw
 import org.tobi29.amboss.util.tellrawMessage
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.setList
 import org.tobi29.scapes.engine.utils.io.tag.structure
-import java.util.*
 
 class ClockGeneratorPlugin(amboss: AmbossServer) : Plugin(amboss) {
     val TELLRAW_PREFIX = TellrawString("Server Lagger 9000", MCColor.dark_red)
@@ -84,11 +84,11 @@ class ClockGeneratorPlugin(amboss: AmbossServer) : Plugin(amboss) {
 
             val blocks = generator.generate()
 
-            val list = ArrayList<TagStructure>(65536)
-            writeBlocks(project.start, blocks) {
-                list.add(structure { setString("Command", it) })
-            }
-            channel.send("Command", structure { setList("Commands", list) })
+            channel.send("Command", structure {
+                setList("Commands") {
+                    writeBlocks(project.start, blocks) { add(it) }
+                }
+            })
         } catch (e: ProjectException) {
             channel.send("Command", structure {
                 setString("Command", tellraw("@a",

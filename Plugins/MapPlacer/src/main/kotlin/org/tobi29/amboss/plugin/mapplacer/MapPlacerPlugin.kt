@@ -28,12 +28,12 @@ import org.tobi29.amboss.util.tellraw
 import org.tobi29.amboss.util.tellrawMessage
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.setList
 import org.tobi29.scapes.engine.utils.io.tag.structure
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.math.vector.Vector3i
 import org.tobi29.scapes.engine.utils.math.vector.minus
-import java.util.*
 import java.util.regex.Pattern
 
 class MapPlacerPlugin(amboss: AmbossServer) : Plugin(amboss) {
@@ -162,15 +162,12 @@ class MapPlacerPlugin(amboss: AmbossServer) : Plugin(amboss) {
             }
         }
 
-        val list = ArrayList<TagStructure>(65536)
-        writeBlocks(place, blocks) {
-            list.add(structure { setString("Command", it) })
-        }
-        list.add(structure {
-            setString("Command",
-                    "/setblock ${place.x} ${place.y + 11} ${place.z} minecraft:structure_block 0 replace {mode:\"SAVE\",posY:-11,sizeX:${size.x},sizeY:11,sizeZ:${size.y},name:\"$map\"}")
+        channel.send("Command", structure {
+            setList("Commands") {
+                writeBlocks(place, blocks) { add(it) }
+                add("/setblock ${place.x} ${place.y + 11} ${place.z} minecraft:structure_block 0 replace {mode:\"SAVE\",posY:-11,sizeX:${size.x},sizeY:11,sizeZ:${size.y},name:\"$map\"}")
+            }
         })
-        channel.send("Command", structure { setList("Commands", list) })
     }
 
     companion object : KLogging() {

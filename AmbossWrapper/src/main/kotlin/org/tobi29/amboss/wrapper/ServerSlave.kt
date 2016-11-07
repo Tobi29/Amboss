@@ -22,7 +22,7 @@ import org.tobi29.scapes.engine.utils.io.asArray
 import org.tobi29.scapes.engine.utils.io.filesystem.*
 import org.tobi29.scapes.engine.utils.io.process
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getListStructure
+import org.tobi29.scapes.engine.utils.io.tag.getListString
 import org.tobi29.scapes.engine.utils.io.tag.structure
 import org.tobi29.scapes.engine.utils.mapNotNull
 import org.tobi29.scapes.engine.utils.stream
@@ -85,9 +85,7 @@ class ServerSlave(logParser: LogParser,
             }
             addCommand("Command") { payload ->
                 payload.getString("Command")?.let { execute(it) }
-                payload.getListStructure("Commands") {
-                    it.getString("Command")?.let { execute(it) }
-                }
+                payload.getListString("Commands") { execute(it) }
             }
             addCommand("Directory-Access") { payload ->
                 payload.getString("Request")?.let { request ->

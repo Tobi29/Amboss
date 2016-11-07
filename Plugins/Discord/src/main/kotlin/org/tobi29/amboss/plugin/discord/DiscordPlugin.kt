@@ -21,8 +21,7 @@ import org.tobi29.amboss.AmbossServer
 import org.tobi29.amboss.connection.WrapperConnection
 import org.tobi29.amboss.plugin.Plugin
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
-import org.tobi29.scapes.engine.utils.io.tag.getListStructure
-import org.tobi29.scapes.engine.utils.mapNotNull
+import org.tobi29.scapes.engine.utils.io.tag.getListString
 import sx.blah.discord.api.ClientBuilder
 import sx.blah.discord.api.IDiscordClient
 
@@ -39,26 +38,17 @@ class DiscordPlugin(amboss: AmbossServer, token: String) : Plugin(amboss) {
                             configStructure: TagStructure) {
         configStructure.getStructure("Discord")?.let { discordStructure ->
             discordStructure.getStructure("Chat")?.let { chatStructure ->
-                chatStructure.getListStructure("Push") { pushStructure ->
-                    pushStructure.getString("Channel")?.mapNotNull {
-                        discord.getChannelByID(it)
-                    }?.let { channel ->
-                        DiscordChat.pushChannel(this, wrapper, channel)
-                    }
+                chatStructure.getListString("Push") {
+                    val channel = discord.getChannelByID(it)
+                    DiscordChat.pushChannel(this, wrapper, channel)
                 }
-                chatStructure.getListStructure("Messages") { messageStructure ->
-                    messageStructure.getString("Channel")?.mapNotNull {
-                        discord.getChannelByID(it)
-                    }?.let { channel ->
-                        DiscordChat.messagesChannel(this, wrapper, channel)
-                    }
+                chatStructure.getListString("Messages") {
+                    val channel = discord.getChannelByID(it)
+                    DiscordChat.messagesChannel(this, wrapper, channel)
                 }
-                chatStructure.getListStructure("Pull") { pullStructure ->
-                    pullStructure.getString("Channel")?.mapNotNull {
-                        discord.getChannelByID(it)
-                    }?.let { channel ->
-                        DiscordChat.pullChannel(this, wrapper, channel)
-                    }
+                chatStructure.getListString("Pull") {
+                    val channel = discord.getChannelByID(it)
+                    DiscordChat.pullChannel(this, wrapper, channel)
                 }
             }
         }
