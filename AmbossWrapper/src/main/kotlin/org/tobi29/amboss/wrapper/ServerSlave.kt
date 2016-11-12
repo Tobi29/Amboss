@@ -41,7 +41,7 @@ class ServerSlave(logParser: LogParser,
             instance.send("Log", payload)
         }
         logParser.addProcessor(
-                "<([\\w\\[\\] ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*?> (.*)") { matcher ->
+                "<([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*?> (.*)") { matcher ->
             val name = matcher.group(2)
             val message = matcher.group(4)
             val payload = TagStructure()
@@ -50,14 +50,14 @@ class ServerSlave(logParser: LogParser,
             instance.send("Chat", payload)
         }
         logParser.addProcessor(
-                "([\\w\\[\\] ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? joined the game") { matcher ->
+                "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? joined the game") { matcher ->
             instance.send("Players-Join", structure {
                 setString("Name", matcher.group(2))
             })
             execute("list")
         }
         logParser.addProcessor(
-                "([\\w\\[\\] ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? left the game") { matcher ->
+                "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? left the game") { matcher ->
             instance.send("Players-Leave", structure {
                 setString("Name", matcher.group(2))
             })
