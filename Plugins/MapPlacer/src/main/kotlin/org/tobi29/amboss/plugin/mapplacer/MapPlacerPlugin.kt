@@ -132,7 +132,7 @@ class MapPlacerPlugin(amboss: AmbossServer) : Plugin(amboss) {
                         "/spreadplayers ${xx + 8} ${zz + 8} 0 1 false @e[tag=ChunkLoader]",
                         Face.DOWN, CommandType.CHAIN, true, false)
                 blocks[x][1][z] = BlockCommand(
-                        "/scoreboard players set @e[type=!Player,x=${xx - 16},y=0,z=${zz - 16},dx=47,dy=255,dz=47] Kill 2",
+                        "/scoreboard players set @e[type=!minecraft:player,x=${xx - 16},y=0,z=${zz - 16},dx=47,dy=255,dz=47] Kill 2",
                         Face.DOWN, CommandType.CHAIN, true, false)
                 blocks[x][0][z] = BlockCommand(
                         "/fill $xx 0 $zz ${xx + 15} 127 ${zz + 15} $fillMaterial",
