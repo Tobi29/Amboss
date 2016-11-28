@@ -60,8 +60,8 @@ class ClockGeneratorPlugin(amboss: AmbossServer) : Plugin(amboss) {
             if (event.muted) {
                 return@listener
             }
-            if (!(permissions.getStructure(event.name)?.getBoolean(
-                    "Clock-Generator") ?: false)) {
+            if (!(permissions.getList(event.name)?.contains(
+                    "ClockGenerator") ?: false)) {
                 return@listener
             }
             if (event.message == "!make redstone") {

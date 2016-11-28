@@ -46,27 +46,25 @@ class MapPlacerPlugin(amboss: AmbossServer) : Plugin(amboss) {
             if (event.muted) {
                 return@listener
             }
-            if (!(permissions.getStructure(event.name)?.getBoolean(
-                    "Map-Placer") ?: false)) {
+            if (!(permissions.getList(event.name)?.contains(
+                    "MapPlacer") ?: false)) {
                 return@listener
             }
-            val prefix = "!make mapplacer"
-            if (event.message.startsWith(prefix)) {
+            if (event.message.startsWith("!make mapplacer")) {
                 event.muted = true
-                val args = event.message.substring(prefix.length)
                 try {
-                    val split = COMMAND_SPLIT.split(args)
-                    if (split.size != 8) {
+                    val split = COMMAND_SPLIT.split(event.message)
+                    if (split.size != 9) {
                         throw IllegalArgumentException(
                                 "Invalid amount of arguments")
                     }
-                    val map = split[1]
-                    val redstoneX = split[2].toInt()
-                    val redstoneY = split[3].toInt()
-                    val redstoneZ = split[4].toInt()
-                    val mapX = split[5].toInt()
-                    val mapY = split[6].toInt()
-                    val mapZ = split[7].toInt()
+                    val map = split[2]
+                    val redstoneX = split[3].toInt()
+                    val redstoneY = split[4].toInt()
+                    val redstoneZ = split[5].toInt()
+                    val mapX = split[6].toInt()
+                    val mapY = split[7].toInt()
+                    val mapZ = split[8].toInt()
                     generate(wrapper, map, Vector3i(mapX, mapY, mapZ),
                             Vector2i(16, 16),
                             Vector3i(redstoneX, redstoneY, redstoneZ), 254,
