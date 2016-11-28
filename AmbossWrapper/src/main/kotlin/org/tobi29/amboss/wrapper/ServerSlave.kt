@@ -64,7 +64,6 @@ class ServerSlave(logParser: LogParser,
                 ".*") { matchers ->
             val payload = TagStructure()
             val players = matchers[1].group()
-            println(players)
             if (players.isEmpty()) {
                 payload.setList("Players", emptyList())
             } else {
