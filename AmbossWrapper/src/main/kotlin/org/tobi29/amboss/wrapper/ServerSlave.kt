@@ -40,7 +40,7 @@ class ServerSlave(logParser: LogParser,
             payload.setString("Message", log)
             instance.send("Log", payload)
         }
-        logParser.addProcessor("$PLAYER_NAME (.*)") { matcher ->
+        logParser.addProcessor("<$PLAYER_NAME> (.*)") { matcher ->
             val name = matcher.group(2)
             val message = matcher.group(4)
             val payload = TagStructure()
