@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-apply from: "ScapesEngine/include.gradle"
-include "AmbossCore"
-include "AmbossShell"
-include "AmbossSimpleKickstarter"
-include "AmbossSystemDKickstarter"
-include "AmbossWrapper"
-include "Plugins:AutoRestart"
-include "Plugins:ClockGenerator"
-include "Plugins:Discord"
-include "Plugins:MapPlacer"
+apply from: "$rootDir/ScapesEngine/resources/scapesengineextension.gradle"
+
+version = "0.0.0"
+
+extension {
+    name = "AutoRestart"
+    parent = project(":AmbossCore")
+}
+
+dependencies {
+    compile project(":AmbossCore")
+
+    testCompile "junit:junit:4.12"
+}

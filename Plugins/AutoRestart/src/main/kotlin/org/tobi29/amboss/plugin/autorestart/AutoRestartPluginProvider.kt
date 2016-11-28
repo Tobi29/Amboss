@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-apply from: "ScapesEngine/include.gradle"
-include "AmbossCore"
-include "AmbossShell"
-include "AmbossSimpleKickstarter"
-include "AmbossSystemDKickstarter"
-include "AmbossWrapper"
-include "Plugins:AutoRestart"
-include "Plugins:ClockGenerator"
-include "Plugins:Discord"
-include "Plugins:MapPlacer"
+package org.tobi29.amboss.plugin.autorestart
+
+import org.tobi29.amboss.AmbossServer
+import org.tobi29.amboss.plugin.spi.PluginProvider
+import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+
+class AutoRestartPluginProvider : PluginProvider {
+    override val name = "AutoRestart"
+
+    override fun create(amboss: AmbossServer,
+                        configStructure: TagStructure) = AutoRestartPlugin(
+            amboss)
+}
