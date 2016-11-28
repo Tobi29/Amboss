@@ -16,9 +16,7 @@
 
 apply from: "$rootDir/ScapesEngine/resources/scapesengineextension.gradle"
 
-sourceCompatibility = 1.8
-
-version = "0.0.0_1"
+version = "0.0.0"
 
 extension {
     name = "MapPlacer"
