@@ -100,6 +100,8 @@ class ServerSlave(logParser: LogParser,
                     }
                 }
             }
+
+            execute("list")
         }
     }
 
