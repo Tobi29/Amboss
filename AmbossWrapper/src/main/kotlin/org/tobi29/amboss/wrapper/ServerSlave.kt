@@ -40,8 +40,7 @@ class ServerSlave(logParser: LogParser,
             payload.setString("Message", log)
             instance.send("Log", payload)
         }
-        logParser.addProcessor(
-                "<([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*?> (.*)") { matcher ->
+        logParser.addProcessor("$PLAYER_NAME (.*)") { matcher ->
             val name = matcher.group(2)
             val message = matcher.group(4)
             val payload = TagStructure()
@@ -49,31 +48,28 @@ class ServerSlave(logParser: LogParser,
             payload.setString("Message", message)
             instance.send("Chat", payload)
         }
-        logParser.addProcessor(
-                "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? joined the game") { matcher ->
+        logParser.addProcessor("$PLAYER_NAME joined the game") { matcher ->
             instance.send("Players-Join", structure {
                 setString("Name", matcher.group(2))
             })
             execute("list")
         }
-        logParser.addProcessor(
-                "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*? left the game") { matcher ->
+        logParser.addProcessor("$PLAYER_NAME left the game") { matcher ->
             instance.send("Players-Leave", structure {
                 setString("Name", matcher.group(2))
             })
             execute("list")
         }
         logParser.addProcessor("There are [0-9]+/[0-9]+ players online:",
-                ".") { matchers ->
+                ".*") { matchers ->
             val payload = TagStructure()
             val players = matchers[1].group()
+            println(players)
             if (players.isEmpty()) {
                 payload.setList("Players", emptyList())
             } else {
                 val list = stream(*PLAYERS_SPLIT.split(players)).map { name ->
-                    val tagStructure = TagStructure()
-                    tagStructure.setString("Name", name)
-                    tagStructure
+                    structure { setString("Name", name) }
                 }.collect(Collectors.toList<TagStructure>())
                 payload.setList("Players", list)
             }
@@ -139,5 +135,6 @@ class ServerSlave(logParser: LogParser,
 
     companion object {
         val PLAYERS_SPLIT: Pattern = Pattern.compile(", ")
+        val PLAYER_NAME = "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*?"
     }
 }
