@@ -82,7 +82,7 @@ class AutoRestartPlugin(amboss: AmbossServer) : Plugin(amboss) {
                     wrapper.send("Command", structure {
                         setString("Command", tellraw("@a",
                                 tellrawMessage(TELLRAW_PREFIX, TellrawString(
-                                        "Usage: !restart [time]"))))
+                                        "Usage: !restart <time>"))))
                     })
                 }
             }
