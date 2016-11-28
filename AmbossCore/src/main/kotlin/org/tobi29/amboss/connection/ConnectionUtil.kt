@@ -18,9 +18,15 @@ package org.tobi29.amboss.connection
 
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.structure
 
 fun ControlPanelProtocol.sendMessage(message: String) {
     val payload = TagStructure()
     payload.setString("Message", message)
     send("Message", payload)
+}
+
+fun WrapperConnection.stop() {
+    send("Command", structure { setString("Command", "stop") })
+    requestClose()
 }
