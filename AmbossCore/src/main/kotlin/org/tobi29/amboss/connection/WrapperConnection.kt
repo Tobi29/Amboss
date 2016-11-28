@@ -20,7 +20,10 @@ import org.tobi29.amboss.plugin.event.LogEvent
 import org.tobi29.scapes.engine.server.ConnectionWorker
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.server.PacketBundleChannel
+import org.tobi29.scapes.engine.utils.io.tag.TagStructure
+import org.tobi29.scapes.engine.utils.io.tag.structure
 import java.io.IOException
+import java.util.*
 import javax.crypto.Cipher
 
 class WrapperConnection(worker: ConnectionWorker,
@@ -28,7 +31,10 @@ class WrapperConnection(worker: ConnectionWorker,
                         channel: PacketBundleChannel,
                         authentication: (String, Int) -> Cipher?) : ControlPanelProtocol(
         worker, channel, server.events, authentication) {
+    val players: List<Player>
+        get() = Collections.unmodifiableList(playerList)
     private var init = false
+    private var playerList = emptyList<Player>()
 
     init {
         addCommand("Wrapper-Init") { payload ->
@@ -46,5 +52,26 @@ class WrapperConnection(worker: ConnectionWorker,
             server.amboss.serversAdd(this)
             server.amboss.plugins.initServer(this, payload)
         }
+        addCommand("Players-List") { payload ->
+            payload.getList("Players")?.let { list ->
+                playerList = list.mapNotNull {
+                    (it as? TagStructure)?.let(::Player)
+                }
+            }
+        }
+    }
+}
+
+data class Player(val name: String)
+
+fun Player(tagStructure: TagStructure): Player? {
+    return tagStructure.getString("Name")?.let { name ->
+        return Player(name)
+    }
+}
+
+fun Player.write(): TagStructure {
+    return structure {
+        setString("Name", name)
     }
 }
