@@ -24,8 +24,10 @@ import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.getListString
 import sx.blah.discord.api.ClientBuilder
 import sx.blah.discord.api.IDiscordClient
+import sx.blah.discord.handle.impl.events.ReadyEvent
 
-class DiscordPlugin(amboss: AmbossServer, token: String) : Plugin(amboss) {
+class DiscordPlugin(amboss: AmbossServer,
+                    token: String) : Plugin(amboss) {
     val discord: IDiscordClient
 
     init {
@@ -38,17 +40,35 @@ class DiscordPlugin(amboss: AmbossServer, token: String) : Plugin(amboss) {
                             configStructure: TagStructure) {
         configStructure.getStructure("Discord")?.let { discordStructure ->
             discordStructure.getStructure("Chat")?.let { chatStructure ->
-                chatStructure.getListString("Push") {
-                    val channel = discord.getChannelByID(it)
-                    DiscordChat.pushChannel(this, wrapper, channel)
+                chatStructure.getListString("Push") { channelID ->
+                    access { discord ->
+                        val channel = discord.getChannelByID(channelID)
+                        if (channel == null) {
+                            logger.warn { "Invalid channel: $channelID" }
+                        } else {
+                            DiscordChat.pushChannel(this, wrapper, channel)
+                        }
+                    }
                 }
-                chatStructure.getListString("Messages") {
-                    val channel = discord.getChannelByID(it)
-                    DiscordChat.messagesChannel(this, wrapper, channel)
+                chatStructure.getListString("Messages") { channelID ->
+                    access { discord ->
+                        val channel = discord.getChannelByID(channelID)
+                        if (channel == null) {
+                            logger.warn { "Invalid channel: $channelID" }
+                        } else {
+                            DiscordChat.messagesChannel(this, wrapper, channel)
+                        }
+                    }
                 }
-                chatStructure.getListString("Pull") {
-                    val channel = discord.getChannelByID(it)
-                    DiscordChat.pullChannel(this, wrapper, channel)
+                chatStructure.getListString("Pull") { channelID ->
+                    access { discord ->
+                        val channel = discord.getChannelByID(channelID)
+                        if (channel == null) {
+                            logger.warn { "Invalid channel: $channelID" }
+                        } else {
+                            DiscordChat.pullChannel(this, wrapper, channel)
+                        }
+                    }
                 }
             }
         }
@@ -56,6 +76,16 @@ class DiscordPlugin(amboss: AmbossServer, token: String) : Plugin(amboss) {
 
     override fun dispose() {
         discord.logout()
+    }
+
+    private fun access(block: (IDiscordClient) -> Unit) {
+        if (discord.isReady) {
+            block(discord)
+        } else {
+            discord.dispatcher.registerTemporaryListener<ReadyEvent> {
+                block(discord)
+            }
+        }
     }
 
     companion object : KLogging()
