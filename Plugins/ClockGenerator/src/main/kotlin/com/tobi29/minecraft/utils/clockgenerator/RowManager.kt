@@ -19,16 +19,15 @@ package com.tobi29.minecraft.utils.clockgenerator
 import com.tobi29.minecraft.utils.clockgenerator.generator.Generator
 import com.tobi29.minecraft.utils.clockgenerator.generator.GeneratorException
 import com.tobi29.minecraft.utils.clockgenerator.parser.ParserException
-import java8.util.Optional
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.stream
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class RowManager {
     private val rows = ConcurrentHashMap<String, Row>()
 
     fun add(name: String,
-            location: Optional<Vector2i>,
+            location: Vector2i?,
             batchSize: Int,
             source: Source): Row {
         if (rows.containsKey(name)) {
@@ -47,28 +46,29 @@ class RowManager {
     }
 
     fun generate(generator: Generator) {
-        val iterator = rows.values.stream().sorted({ row1, row2 ->
-            val location1 = row1.location
-            val location2 = row2.location
-            if (location1.isPresent() && !location2.isPresent()) {
-                return@sorted -1
-            }
-            if (location2.isPresent() && !location1.isPresent()) {
-                return@sorted 1
-            }
-            if (location1.isPresent()) {
-                return@sorted 0
-            }
-            val length1 = row1.size
-            val length2 = row2.size
-            if (length1 > length2) {
-                return@sorted -1
-            }
-            if (length2 > length1) {
-                return@sorted 1
-            }
-            0
-        }).iterator()
+        val iterator = rows.values.asSequence().sortedWith(
+                Comparator { row1, row2 ->
+                    val location1 = row1.location
+                    val location2 = row2.location
+                    if (location1 != null && location2 == null) {
+                        return@Comparator -1
+                    }
+                    if (location2 != null && location1 == null) {
+                        return@Comparator 1
+                    }
+                    if (location1 != null) {
+                        return@Comparator 0
+                    }
+                    val length1 = row1.size
+                    val length2 = row2.size
+                    if (length1 > length2) {
+                        return@Comparator -1
+                    }
+                    if (length2 > length1) {
+                        return@Comparator 1
+                    }
+                    return@Comparator 0
+                }).iterator()
         while (iterator.hasNext()) {
             generator.addRow(iterator.next())
         }

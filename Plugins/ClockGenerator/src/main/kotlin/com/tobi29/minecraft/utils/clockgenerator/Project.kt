@@ -16,7 +16,6 @@
 package com.tobi29.minecraft.utils.clockgenerator
 
 import com.tobi29.minecraft.utils.clockgenerator.generator.Generator
-import java8.util.Optional
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
 import org.tobi29.scapes.engine.utils.math.vector.Vector3i
 import java.util.*
@@ -62,7 +61,7 @@ constructor(properties: Properties) {
     }
 
     fun addRow(name: String,
-               location: Optional<Vector2i>,
+               location: Vector2i?,
                source: Source): Row {
         return rows.add(name, location, length, source)
     }

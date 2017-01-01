@@ -16,8 +16,7 @@
 
 package org.tobi29.amboss.wrapper.logparse
 
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -35,9 +34,9 @@ class LogParser {
                      pattern2: String,
                      vararg patterns: String,
                      processor: (List<Matcher>) -> Unit) {
-        addProcessor(stream(pattern1, pattern2, *patterns).map {
+        addProcessor(sequenceOf(pattern1, pattern2, *patterns).map {
             Pattern.compile(it)
-        }.toTypedArray(), processor)
+        }.toArray(), processor)
     }
 
     fun addProcessor(patterns: Array<Pattern>,

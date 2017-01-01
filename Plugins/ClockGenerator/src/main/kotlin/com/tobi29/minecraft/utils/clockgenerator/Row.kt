@@ -16,32 +16,27 @@
 package com.tobi29.minecraft.utils.clockgenerator
 
 import com.tobi29.minecraft.utils.clockgenerator.parser.ParserException
-import java8.util.Optional
-import java8.util.stream.Stream
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
-import org.tobi29.scapes.engine.utils.stream
+import org.tobi29.scapes.engine.utils.readOnly
 import java.util.*
 import java.util.regex.Pattern
 
-class Row(val name: String, val location: Optional<Vector2i>, private val batchSize: Int, val source: Source) : Section {
-    private val commands = ArrayList<RowBatch>()
+class Row(val name: String, val location: Vector2i?, private val batchSize: Int, val source: Source) : Section {
+    private val commandsMut = ArrayList<RowBatch>()
+    val commands = commandsMut.readOnly()
     private var currentBatch: RowBatch? = null
     private var previous = Optional.empty<Command>()
 
     init {
         val batch = RowBatch(batchSize)
         currentBatch = batch
-        commands.add(batch)
+        commandsMut.add(batch)
         addCommand(CommandActivator(name, source))
         addCommand(CommandImpulse(source))
     }
 
     val size: Int
-        get() = commands.size
-
-    fun stream(): Stream<RowBatch> {
-        return commands.stream()
-    }
+        get() = commandsMut.size
 
     override fun add(line: String,
                      source: Source) {
@@ -85,7 +80,7 @@ class Row(val name: String, val location: Optional<Vector2i>, private val batchS
         }
         val batch = RowBatch(batchSize)
         currentBatch = batch
-        commands.add(batch)
+        commandsMut.add(batch)
     }
 
     private fun addCommand(command: Command) {

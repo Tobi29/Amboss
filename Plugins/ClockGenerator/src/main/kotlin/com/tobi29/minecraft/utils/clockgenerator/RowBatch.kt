@@ -16,29 +16,22 @@
 
 package com.tobi29.minecraft.utils.clockgenerator
 
-import com.tobi29.minecraft.utils.clockgenerator.generator.GeneratorException
-import java8.util.stream.Stream
-import org.tobi29.scapes.engine.utils.stream
-
 class RowBatch(length: Int) {
-    private val commands: Array<Command?>
+    private val commandsMut: Array<Command?>
+    val commands: Array<Command?>
+        get() = commandsMut.clone()
     private var position: Int = 0
 
     init {
-        commands = arrayOfNulls<Command>(length)
-    }
-
-    @Throws(GeneratorException::class)
-    fun stream(): Stream<Command?> {
-        return stream(*commands)
+        commandsMut = arrayOfNulls<Command>(length)
     }
 
     fun plusAssign(vararg command: Command) {
-        System.arraycopy(command, 0, commands, position, command.size)
+        System.arraycopy(command, 0, commandsMut, position, command.size)
         position += command.size
     }
 
     fun remaining(): Int {
-        return commands.size - position
+        return commandsMut.size - position
     }
 }

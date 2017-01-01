@@ -16,13 +16,11 @@
 
 package org.tobi29.amboss.util
 
-import java8.util.stream.Collectors
 import org.tobi29.scapes.engine.utils.io.ByteBufferStream
 import org.tobi29.scapes.engine.utils.io.asString
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
 import org.tobi29.scapes.engine.utils.io.tag.structure
-import org.tobi29.scapes.engine.utils.stream
 
 fun tellraw(selector: String,
             message: TellrawString): String {
@@ -40,8 +38,7 @@ fun tellrawMessage(prefix: TellrawString,
 data class TellrawString(val text: String = "",
                          val color: MCColor? = null,
                          val elements: List<TellrawString>? = null) {
-    constructor(vararg elements: TellrawString) : this(
-            stream(*elements).collect(Collectors.toList<TellrawString>()))
+    constructor(vararg elements: TellrawString) : this(elements.toList())
 
     constructor(elements: List<TellrawString>) : this("", null, elements)
 
@@ -50,9 +47,7 @@ data class TellrawString(val text: String = "",
             setString("text", text)
             color?.let { setString("color", it.toString()) }
             elements?.let {
-                setList("extra",
-                        it.stream().map { it.write() }.collect(
-                                Collectors.toList<TagStructure>()))
+                setList("extra", it.map { it.write() })
             }
         }
     }

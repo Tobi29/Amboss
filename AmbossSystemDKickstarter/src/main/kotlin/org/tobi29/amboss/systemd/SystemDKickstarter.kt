@@ -16,10 +16,8 @@
 
 package org.tobi29.amboss.systemd
 
-import java8.util.stream.Collectors
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.utils.io.filesystem.*
-import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.structure
 
 class SystemDKickstarter(channel: ControlPanelProtocol,
@@ -28,13 +26,13 @@ class SystemDKickstarter(channel: ControlPanelProtocol,
     init {
         channel.addCommand("List") {
             channel.send("List", structure {
-                stream(servers) {
+                list(servers) {
                     setList("Servers",
-                            it.filter(::isDirectory).filter(::isNotHidden).map {
+                            filter(::isDirectory).filter(::isNotHidden).map {
                                 structure {
                                     setString("Name", it.fileName.toString())
                                 }
-                            }.collect(Collectors.toList<TagStructure>()))
+                            }.toList())
                 }
             })
         }

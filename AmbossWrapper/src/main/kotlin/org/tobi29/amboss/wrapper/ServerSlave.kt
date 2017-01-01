@@ -16,7 +16,6 @@
 
 package org.tobi29.amboss.wrapper
 
-import java8.util.stream.Collectors
 import org.tobi29.amboss.wrapper.logparse.LogParser
 import org.tobi29.scapes.engine.utils.io.asArray
 import org.tobi29.scapes.engine.utils.io.filesystem.*
@@ -24,10 +23,7 @@ import org.tobi29.scapes.engine.utils.io.process
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.io.tag.getListString
 import org.tobi29.scapes.engine.utils.io.tag.structure
-import org.tobi29.scapes.engine.utils.mapNotNull
-import org.tobi29.scapes.engine.utils.stream
 import java.io.IOException
-import java.util.regex.Pattern
 
 class ServerSlave(logParser: LogParser,
                   execute: (String) -> Unit,
@@ -67,9 +63,9 @@ class ServerSlave(logParser: LogParser,
             if (players.isEmpty()) {
                 payload.setList("Players", emptyList())
             } else {
-                val list = stream(*PLAYERS_SPLIT.split(players)).map { name ->
+                val list = players.split(", ").map { name ->
                     structure { setString("Name", name) }
-                }.collect(Collectors.toList<TagStructure>())
+                }
                 payload.setList("Players", list)
             }
             instance.send("Players-List", payload)
@@ -84,7 +80,7 @@ class ServerSlave(logParser: LogParser,
             }
             addCommand("Directory-Access") { payload ->
                 payload.getString("Request")?.let { request ->
-                    payload.getString("Path")?.mapNotNull {
+                    payload.getString("Path")?.let {
                         data.resolve(it).toAbsolutePath().normalize()
                     }?.let { path ->
                         try {
@@ -108,8 +104,8 @@ class ServerSlave(logParser: LogParser,
     private fun saveDirectory(path: FilePath,
                               container: FilePath): TagStructure {
         return structure {
-            stream(path) {
-                it.map { it.toAbsolutePath().normalize() }.forEach { entry ->
+            list(path) {
+                map { it.toAbsolutePath().normalize() }.forEach { entry ->
                     checkAccess(entry, container)
                     val name = entry.fileName.toString()
                     if (isDirectory(entry)) {
@@ -135,7 +131,6 @@ class ServerSlave(logParser: LogParser,
     }
 
     companion object {
-        val PLAYERS_SPLIT: Pattern = Pattern.compile(", ")
         val PLAYER_NAME = "([\\w\\[\\]\\- ]|§[0-9a-fr])*?(\\w+)(§[0-9a-fr])*?"
     }
 }

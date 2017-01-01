@@ -18,8 +18,8 @@ package com.tobi29.minecraft.utils.clockgenerator.generator
 import com.tobi29.minecraft.utils.clockgenerator.Row
 import com.tobi29.minecraft.utils.clockgenerator.RowBatch
 import com.tobi29.minecraft.utils.clockgenerator.Source
-import org.tobi29.amboss.util.block.Block
 import com.tobi29.minecraft.utils.clockgenerator.parser.ParserException
+import org.tobi29.amboss.util.block.Block
 import org.tobi29.scapes.engine.utils.math.Face
 import org.tobi29.scapes.engine.utils.math.vector.Vector3i
 import java.util.*
@@ -46,9 +46,9 @@ class Generator(rowCount: Int,
         var yy = -1
         val location = row.location
         val required = row.size
-        if (location.isPresent) {
-            xx = location.get().x
-            yy = location.get().y
+        if (location != null) {
+            xx = location.x
+            yy = location.y
         } else {
             var y = 0
             while (y < used.size && xx < 0) {
@@ -109,7 +109,7 @@ class Generator(rowCount: Int,
                 val row = rows[y][z]
                 if (row != null) {
                     var zz = z
-                    val iterator = row.stream().iterator()
+                    val iterator = row.commands.iterator()
                     var flipped = false
                     while (iterator.hasNext()) {
                         val batch = iterator.next()
@@ -130,10 +130,11 @@ class Generator(rowCount: Int,
                                  last: Boolean,
                                  flipped: Boolean,
                                  batch: RowBatch) {
-        val iterator = batch.stream().iterator()
         var x = 0
-        while (iterator.hasNext()) {
-            val command = iterator.next() ?: break
+        batch.commands.forEach { command ->
+            if (command == null) {
+                return@forEach
+            }
             val xx: Int
             if (flipped) {
                 xx = rowLength - x - 1

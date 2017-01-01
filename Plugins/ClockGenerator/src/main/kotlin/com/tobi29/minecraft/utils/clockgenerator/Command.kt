@@ -21,8 +21,7 @@ import org.tobi29.amboss.util.block.Block
 import org.tobi29.amboss.util.block.BlockCommand
 import org.tobi29.amboss.util.block.CommandType
 import org.tobi29.scapes.engine.utils.math.Face
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
+import org.tobi29.scapes.engine.utils.toArray
 import java.util.*
 
 open class Command(protected val command: String, protected val source: Source) {
@@ -38,7 +37,7 @@ open class Command(protected val command: String, protected val source: Source) 
     }
 
     protected fun processors(generator: Generator): Array<String> {
-        return process.stream().map { generator.preprocess(it) }.toTypedArray()
+        return process.asSequence().map { generator.preprocess(it) }.toArray()
     }
 
     @Throws(GeneratorException::class)

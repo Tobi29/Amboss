@@ -16,12 +16,8 @@
 
 package org.tobi29.amboss.util.block
 
-import org.tobi29.amboss.util.block.CommandType
-import org.tobi29.amboss.util.block.CommandUtil
 import org.tobi29.scapes.engine.utils.math.Face
-import org.tobi29.scapes.engine.utils.stream
-import org.tobi29.scapes.engine.utils.toTypedArray
-
+import org.tobi29.scapes.engine.utils.toArray
 import java.util.regex.Pattern
 
 class BlockCommand(private val command: String, private val process: Array<out String>, private val face: Face,
@@ -66,12 +62,12 @@ class BlockCommand(private val command: String, private val process: Array<out S
         return arrayOf(
                 "/setblock $x $y $z $type $data replace {Command:\"${CommandUtil.escape(
                         command)}\",auto:${if (auto) 1 else 0},TrackOutput:0}",
-                *stream(*process).map {
+                *process.asSequence().map {
                     REPLACE_Z.matcher(REPLACE_Y.matcher(
                             REPLACE_X.matcher(it).replaceAll(
                                     x.toString())).replaceAll(
                             y.toString())).replaceAll(z.toString())
-                }.toTypedArray())
+                }.toArray())
     }
 
     companion object {

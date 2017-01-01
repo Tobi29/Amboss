@@ -32,7 +32,7 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
-val VERSION = Version(0, 0, 0, 1)
+val VERSION = Version(0, 0, 0)
 
 private val HOME_PATH = Pattern.compile("\\\$HOME")
 

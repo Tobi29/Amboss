@@ -18,7 +18,6 @@ package com.tobi29.minecraft.utils.clockgenerator.parser
 import com.tobi29.minecraft.utils.clockgenerator.Project
 import com.tobi29.minecraft.utils.clockgenerator.Section
 import com.tobi29.minecraft.utils.clockgenerator.Source
-import java8.util.Optional
 import org.tobi29.scapes.engine.utils.io.tag.TagStructure
 import org.tobi29.scapes.engine.utils.join
 import org.tobi29.scapes.engine.utils.math.vector.Vector2i
@@ -119,19 +118,16 @@ class Parser(properties: Properties) {
                 section?.let { it.end() }
                 val split = line.substring(1).split(" ".toRegex(),
                         4).toTypedArray()
-                val location: Optional<Vector2i>
-                if (split.size == 3) {
+                val location = if (split.size == 3) {
                     try {
-                        location = Optional.of(
-                                Vector2i(Integer.parseInt(split[1]),
-                                        Integer.parseInt(split[2])))
+                        Vector2i(Integer.parseInt(split[1]),
+                                Integer.parseInt(split[2]))
                     } catch (e: NumberFormatException) {
                         throw ParserException(source,
                                 "Invalid row start location")
                     }
-
                 } else if (split.size == 1) {
-                    location = Optional.empty<Vector2i>()
+                    null
                 } else {
                     throw ParserException(source, "Invalid row start")
                 }

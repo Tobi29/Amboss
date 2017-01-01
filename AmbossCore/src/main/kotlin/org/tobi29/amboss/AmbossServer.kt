@@ -16,8 +16,6 @@
 
 package org.tobi29.amboss
 
-import java8.util.stream.Collectors
-import java8.util.stream.Stream
 import mu.KLogging
 import org.tobi29.amboss.connection.KickstarterConnection
 import org.tobi29.amboss.connection.ServerConnection
@@ -25,15 +23,18 @@ import org.tobi29.amboss.connection.WrapperConnection
 import org.tobi29.amboss.plugin.Plugins
 import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.server.SSLHandle
-import org.tobi29.scapes.engine.utils.*
+import org.tobi29.scapes.engine.utils.Crashable
+import org.tobi29.scapes.engine.utils.EventDispatcher
 import org.tobi29.scapes.engine.utils.io.filesystem.FilePath
 import org.tobi29.scapes.engine.utils.io.filesystem.exists
 import org.tobi29.scapes.engine.utils.io.filesystem.read
 import org.tobi29.scapes.engine.utils.io.filesystem.write
 import org.tobi29.scapes.engine.utils.io.tag.*
 import org.tobi29.scapes.engine.utils.io.tag.json.TagStructureJSON
+import org.tobi29.scapes.engine.utils.readPublic
 import org.tobi29.scapes.engine.utils.task.TaskExecutor
 import org.tobi29.scapes.engine.utils.task.start
+import org.tobi29.scapes.engine.utils.writePublic
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.security.KeyPair
@@ -108,16 +109,16 @@ class AmbossServer(configStructure: TagStructure,
         return null
     }
 
-    fun serversList(): Stream<Pair<UUID, WrapperConnection>> {
-        return servers.entries.stream().filter {
+    fun serversList(): Sequence<Pair<UUID, WrapperConnection>> {
+        return servers.entries.asSequence().filter {
             it.value is WrapperConnection
         }.map {
             Pair(it.key, it.value as WrapperConnection)
         }
     }
 
-    fun kickstartersList(): Stream<Pair<UUID, KickstarterConnection>> {
-        return servers.entries.stream().filter {
+    fun kickstartersList(): Sequence<Pair<UUID, KickstarterConnection>> {
+        return servers.entries.asSequence().filter {
             it.value is KickstarterConnection
         }.map {
             Pair(it.key, it.value as KickstarterConnection)
@@ -145,8 +146,8 @@ class AmbossServer(configStructure: TagStructure,
         return false
     }
 
-    fun serverKeysList(): Stream<Triple<UUID, String, PublicKey>> {
-        return serverKeys.entries.stream().map {
+    fun serverKeysList(): Sequence<Triple<UUID, String, PublicKey>> {
+        return serverKeys.entries.asSequence().map {
             Triple(it.key, it.value.first, it.value.second)
         }
     }
@@ -178,7 +179,7 @@ class AmbossServer(configStructure: TagStructure,
 
     @Synchronized private fun writePersistent(path: FilePath) {
         val tagStructure = TagStructure()
-        val serverList = serverKeys.entries.stream().map {
+        val serverList = serverKeys.entries.mapNotNull {
             try {
                 val serverStructure = TagStructure()
                 serverStructure.setUUID("UUID", it.key)
@@ -190,7 +191,7 @@ class AmbossServer(configStructure: TagStructure,
                 logger.warn { "Failed to write server key: $e" }
                 null
             }
-        }.notNull().collect(Collectors.toList<TagStructure>())
+        }
         tagStructure.setList("Servers", serverList)
         write(path) { TagStructureJSON.write(tagStructure, it) }
     }

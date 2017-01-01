@@ -25,7 +25,6 @@ import org.tobi29.scapes.engine.server.ControlPanelProtocol
 import org.tobi29.scapes.engine.utils.io.tag.getUUID
 import org.tobi29.scapes.engine.utils.io.tag.setUUID
 import org.tobi29.scapes.engine.utils.io.tag.structure
-import org.tobi29.scapes.engine.utils.mapNotNull
 import org.tobi29.scapes.engine.utils.writePrivate
 import java.security.spec.InvalidKeySpecException
 
@@ -83,7 +82,7 @@ class ShellPlugin(amboss: AmbossServer) : Plugin(amboss) {
             channel.sendMessage(output.toString())
         }
         channel.addCommand("Kickstarter-Servers-List") { payload ->
-            payload.getUUID("Kickstarter")?.mapNotNull {
+            payload.getUUID("Kickstarter")?.let {
                 amboss.kickstartersGet(it)
             }?.let { kickstarter ->
                 kickstarter.commandHook("List") { payload ->
@@ -93,28 +92,28 @@ class ShellPlugin(amboss: AmbossServer) : Plugin(amboss) {
             }
         }
         channel.addCommand("Kickstarter-Servers-Start") { payload ->
-            payload.getUUID("Kickstarter")?.mapNotNull {
+            payload.getUUID("Kickstarter")?.let {
                 amboss.kickstartersGet(it)
             }?.let { kickstarter ->
                 kickstarter.send("Start", payload)
             }
         }
         channel.addCommand("Kickstarter-Servers-Stop") { payload ->
-            payload.getUUID("Kickstarter")?.mapNotNull {
+            payload.getUUID("Kickstarter")?.let {
                 amboss.kickstartersGet(it)
             }?.let { kickstarter ->
                 kickstarter.send("Stop", payload)
             }
         }
         channel.addCommand("Kickstarter-Servers-Restart") { payload ->
-            payload.getUUID("Kickstarter")?.mapNotNull {
+            payload.getUUID("Kickstarter")?.let {
                 amboss.kickstartersGet(it)
             }?.let { kickstarter ->
                 kickstarter.send("Restart", payload)
             }
         }
         channel.addCommand("Server-Listen") { payload ->
-            payload.getUUID("UUID")?.mapNotNull {
+            payload.getUUID("UUID")?.let {
                 amboss.serversGet(it)
             }?.let { server ->
                 server.events.listener<LogEvent>(channel) { event ->
