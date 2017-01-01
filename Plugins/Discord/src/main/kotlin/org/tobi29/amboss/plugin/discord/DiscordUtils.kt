@@ -21,6 +21,11 @@ import sx.blah.discord.api.events.Event
 import sx.blah.discord.api.events.EventDispatcher
 import sx.blah.discord.api.events.IListener
 
+inline fun <reified E : Event> EventDispatcher.registerListener(crossinline listener: (E) -> Unit) {
+    val iListener = IListener<E> { listener(it) }
+    registerListener(iListener)
+}
+
 inline fun <reified E : Event> EventDispatcher.attachListener(channel: ControlPanelProtocol,
                                                               crossinline listener: (E) -> Unit) {
     val iListener = IListener<E> { listener(it) }
