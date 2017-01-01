@@ -18,10 +18,10 @@ buildscript {
     repositories {
         jcenter()
     }
-}
-
-plugins {
-    id "nebula.kotlin" version "1.0.4" apply false
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.0.6"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.9"
+    }
 }
 
 allprojects {
@@ -33,7 +33,7 @@ allprojects {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = "3.0"
+    gradleVersion = "3.2"
     distributionUrl =
             "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
